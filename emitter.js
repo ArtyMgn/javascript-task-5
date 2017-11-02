@@ -93,7 +93,7 @@ function getEmitter() {
          * @returns {Object} this emmiter
          */
         onWithFilter: function (eventName, context, handler, filter) {
-            if (context === undefined) {
+            if (context === undefined || context === null) {
                 return this;
             }
 
