@@ -147,7 +147,6 @@ function getEvent(eventName, parentEvent) {
                 .filter(observer =>
                     typeof observer.filterCalls === 'function' &&
                     typeof observer.handler === 'function' &&
-                    typeof observer.context !== undefined &&
                     observer.filterCalls(callsCount))
                 .forEach(observer => observer.handler.call(observer.context));
 
