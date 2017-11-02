@@ -63,10 +63,7 @@ function getEmitter() {
          */
         off: function (eventName, context) {
             if (events.hasOwnProperty(eventName)) {
-                events[eventName].unsubscribe(context);
-                Object.values(events)
-                    .filter(event => event.parent !== null && event.parent.name === eventName)
-                    .forEach(event => event.unsubscribe(context));
+                events[eventName].unsubscribe(context, events);
             }
 
             return this;
@@ -171,8 +168,11 @@ function getEvent(eventName, parentEvent) {
             });
         },
 
-        unsubscribe: function (context) {
+        unsubscribe: function (context, events) {
             this.observers = this.observers.filter(observer => observer.context !== context);
+            Object.values(events)
+                .filter(event => event.parent !== null && event.parent.name === this.name)
+                .forEach(event => event.unsubscribe(context, events));
         }
     };
 }

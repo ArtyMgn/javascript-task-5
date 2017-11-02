@@ -26,7 +26,7 @@ var lecturer = getEmitter();
 
 // С началом лекции у всех резко повышаются показатели
 lecturer
-    .on('begin', undefined, function () {
+    .on('begin', students.Sam, function () {
         this.focus += 10;
     })
     .on('begin', students.Sally, function () {
