@@ -87,16 +87,6 @@ function getEmitter() {
         },
 
         /**
-         * Подписаться на событие c ограничением
-         * @param {String} eventName
-         * @param {Object} context
-         * @param {Function} handler
-         * @param {Function} filter принимает на
-         * вход количество вызовов события
-         * @returns {Object} this emmiter
-         */
-
-        /**
          * Подписаться на событие с ограничением по количеству полученных уведомлений
          * @star
          * @param {String} event
