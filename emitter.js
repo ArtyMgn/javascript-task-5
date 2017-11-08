@@ -144,7 +144,9 @@ function getEvent(eventName, parentEvent) {
         raise: function () {
             callsCount++;
             this.observers
-                .filter(observer => observer.filterCalls(callsCount))
+                .filter(observer => this.observers
+                    .filter(x => x.context === observer.context)
+                    .every(x => x.filterCalls(callsCount)))
                 .forEach(observer => observer.handler.call(observer.context));
 
             if (this.parent !== null) {
