@@ -52,7 +52,10 @@ function getEmitter() {
          * @returns {Object} this emmiter
          */
         on: function (eventName, context, handler) {
-            return this.onWithFilter(eventName, context, handler, callsCount => callsCount > 0);
+            addEvents(eventName);
+            events[eventName].subscribe(handler, context);
+
+            return this;
         },
 
         /**
@@ -92,12 +95,6 @@ function getEmitter() {
          * вход количество вызовов события
          * @returns {Object} this emmiter
          */
-        onWithFilter: function (eventName, context, handler, filter) {
-            addEvents(eventName);
-            events[eventName].subscribe(handler, context, filter);
-
-            return this;
-        },
 
         /**
          * Подписаться на событие с ограничением по количеству полученных уведомлений
@@ -109,9 +106,19 @@ function getEmitter() {
          * @returns {Object} this emmiter
          */
         several: function (event, context, handler, times) {
-            return times < 1
-                ? this.on(event, context, handler)
-                : this.onWithFilter(event, context, handler, callsCount => callsCount <= times);
+            if (times < 1) {
+                return this.on(event, context, handler);
+            }
+
+            var callsNumber = 0;
+            var handlerWithCallsLimit = function () {
+                if (callsNumber < times) {
+                    handler.call(context);
+                    callsNumber++;
+                }
+            };
+
+            return this.on(event, context, handlerWithCallsLimit);
         },
 
         /**
@@ -124,41 +131,42 @@ function getEmitter() {
          * @returns {Object} this emmiter
          */
         through: function (eventName, context, handler, frequency) {
-            return frequency < 1
-                ? this.on(eventName, context, handler)
-                : this.onWithFilter(eventName, context, handler,
-                    callsCount => callsCount % frequency !== 0);
+            if (frequency < 1) {
+                return this.on(eventName, context, handler);
+            }
+
+            var callsNumber = 0;
+            var handlerOfthroughEvent = function () {
+                if (callsNumber % frequency === 0) {
+                    handler.call(context);
+                }
+                callsNumber++;
+            };
+
+            return this.on(eventName, context, handlerOfthroughEvent);
         }
     };
 }
 
 
 function getEvent(eventName, parentEvent) {
-    let callsCount = 0;
-
     return {
         observers: [],
         name: eventName,
         parent: parentEvent,
 
         raise: function () {
-            callsCount++;
-            this.observers
-                .filter(observer => this.observers
-                    .filter(x => x.context === observer.context)
-                    .every(x => x.filterCalls(callsCount)))
-                .forEach(observer => observer.handler.call(observer.context));
+            this.observers.forEach(observer => observer.handler.call(observer.context));
 
             if (this.parent !== null) {
                 this.parent.raise();
             }
         },
 
-        subscribe: function (handler, context, filterCalls) {
+        subscribe: function (handler, context) {
             this.observers.push({
                 'handler': handler,
-                'context': context,
-                'filterCalls': filterCalls
+                'context': context
             });
         },
 
